@@ -1,0 +1,28 @@
+---
+name: Devel-Maypole
+version: 0.1
+author:
+  - David Baird <cpan@riverside-cms.co.uk>
+abstract: support utilities for developing the Maypole stack
+license: perl
+requires:
+  DBI: 0
+  Data::Dumper: 0
+  File::Copy::Recursive: 0
+  File::Slurp: 0
+  File::Temp: 0
+  Maypole::Config: 0
+  Path::Class: 0
+  Sysadm::Install: 0
+  Test::Exception: 0
+  Test::File: 0
+  Test::More: 0
+  Test::WWW::Mechanize::Maypole: 0
+provides:
+  Devel::Maypole:
+    file: lib/Devel/Maypole.pm
+    version: 0.1
+  __APP_NAME__:
+    file: lib/Devel/Maypole.pm
+    version: 0.1
+generated_by: Module::Build version 0.2609
