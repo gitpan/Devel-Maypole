@@ -2,32 +2,55 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 13;
 use Test::Exception;
 use Test::File;
 
 use File::Temp();
 use Path::Class();
 
-use Devel::Maypole qw/:install/;
+use Devel::Maypole qw/ :install /;
 
 my $tempdir = File::Temp::tempdir( CLEANUP => 1 );
 
-$ENV{MAYPOLE_TEMPLATES_INSTALL_PREFIX} = $tempdir;
+$ENV{MAYPOLE_RESOURCES_INSTALL_PREFIX} = $tempdir;
 
-lives_ok { install_templates( 'Devel::Maypole', 't/templates', 'test' ) } 'survived installing test templates';
+# install
 
-my $dest_dir = Path::Class::Dir->new( '', map { split '/', $_ } $tempdir, 'Devel/Maypole/test/custom' );
+                                # for             from           set
+lives_ok { install_templates  ( 'Devel::Maypole', 't/templates', 'test' ) } 'survived installing templates';
+lives_ok { install_yaml_config( 'Devel::Maypole', 'config',      'test' ) } 'survived installing configs';
+lives_ok { install_ddl        ( 'Devel::Maypole', 'sql/ddl',     'test' ) } 'survived installing ddl';
+lives_ok { install_data       ( 'Devel::Maypole', 'sql/data',    'test' ) } 'survived installing data';
 
-my $source_dir = Path::Class::Dir->new( 't/templates/custom' );
 
-while ( my $file = $source_dir->next ) 
+my %resources = ( templates => { dest   => [ ( $tempdir, 'templates', 'Devel/Maypole/test/custom' ) ],
+                                 source => 't/templates/custom',
+                                 },
+              yaml_config    => { dest => [ ( $tempdir, 'yaml_config', 'Devel/Maypole/test' ) ],
+                             source => 'config',
+                             },
+              ddl       => { dest => [ ( $tempdir, 'ddl', 'Devel/Maypole/test' ) ],
+                             source => 'sql/ddl',
+                             },
+              data      => { dest => [ ( $tempdir, 'data', 'Devel/Maypole/test' ) ],
+                             source => 'sql/data',
+                             },
+              );
+
+foreach my $what ( keys %resources )
 {
-    next unless -f $file;
-    next if $file =~ /^\./;
+    my $source_dir  = Path::Class::Dir->new( $resources{ $what }->{source} );
+    my $dest_dir    = Path::Class::Dir->new( '', map { split '/', $_ } @{ $resources{ $what }->{dest} } );
     
-    my $dest_file = $dest_dir->file( $file->basename );
-
-    file_exists_ok( $dest_file );
+    while ( my $file = $source_dir->next ) 
+    {
+        next unless -f $file;
+        next if $file =~ /^\./;
+        
+        my $dest_file = $dest_dir->file( $file->basename );
+    
+        file_exists_ok( $dest_file );
+    }
 }
 
